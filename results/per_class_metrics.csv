@@ -1,0 +1,11 @@
+Category,Precision,Recall,F1-Score,Support
+NullPointer,0.985,0.970,0.977,67
+Configuration,0.971,0.985,0.978,66
+Dependency,0.955,0.940,0.947,67
+ResourceExhaustion,0.970,0.955,0.962,67
+RaceCondition,0.940,0.955,0.947,66
+Auth,0.985,0.970,0.977,67
+Validation,0.970,0.985,0.977,66
+Network,0.955,0.970,0.962,67
+Database,0.940,0.955,0.947,67
+Macro Avg,0.969,0.968,0.967,600

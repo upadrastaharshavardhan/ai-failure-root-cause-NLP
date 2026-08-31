@@ -1,0 +1,7 @@
+Variant,Accuracy,Macro_F1,MRR_at_5
+Full system (MiniLM + LR + FAISS),0.9683,0.967,0.912
+Without preprocessing,0.9417,0.941,0.887
+TF-IDF + Logistic Regression,0.8950,0.893,
+Random Forest instead of LR,0.9567,0.955,0.905
+all-mpnet-base-v2 embeddings,0.9733,0.973,0.921
+No class-weight balancing,0.9550,0.953,0.908
