@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI-Based Software Failure Analysis & Root Cause Prediction using NLP, semantic embeddings, machine learning and similarity search." />
+  <meta name="theme-color" content="#07111f" />
+  <title>AI Failure Root Cause Intelligence</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #050914;
+      --bg-2: #08111f;
+      --panel: rgba(12, 23, 40, .72);
+      --panel-solid: #0c1728;
+      --panel-2: #101e33;
+      --text: #eef5ff;
+      --muted: #9aa9bd;
+      --line: rgba(148, 163, 184, .15);
+      --cyan: #22d3ee;
+      --blue: #60a5fa;
+      --violet: #a78bfa;
+      --green: #34d399;
+      --orange: #fb923c;
+      --pink: #f472b6;
+      --shadow: 0 24px 70px rgba(0,0,0,.35);
+      --radius: 22px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 5%, rgba(34,211,238,.11), transparent 28%),
+        radial-gradient(circle at 85% 12%, rgba(167,139,250,.11), transparent 26%),
+        linear-gradient(180deg, var(--bg) 0%, #07101c 45%, #050914 100%);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    body.light {
+      --bg: #f6f9fc;
+      --bg-2: #edf3f9;
+      --panel: rgba(255,255,255,.78);
+      --panel-solid: #ffffff;
+      --panel-2: #f1f6fb;
+      --text: #0b1728;
+      --muted: #526276;
+      --line: rgba(15,23,42,.12);
+      --shadow: 0 24px 70px rgba(31,41,55,.12);
+      background: radial-gradient(circle at 10% 0%, rgba(34,211,238,.13), transparent 28%), var(--bg);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .container { width: min(calc(100% - 40px), var(--max)); margin: auto; }
+
+    /* Navigation */
+    .nav-wrap {
+      position: fixed; inset: 0 0 auto; z-index: 100;
+      border-bottom: 1px solid var(--line);
+      background: rgba(5,9,20,.68);
+      backdrop-filter: blur(18px);
+    }
+    body.light .nav-wrap { background: rgba(246,249,252,.78); }
+    nav {
+      height: 72px; display:flex; align-items:center; justify-content:space-between; gap:20px;
+    }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.03em; }
+    .brand-mark {
+      width:36px; height:36px; border-radius:11px; display:grid; place-items:center;
+      background: linear-gradient(135deg,var(--cyan),var(--violet));
+      color:#03101b; box-shadow: 0 8px 30px rgba(34,211,238,.2);
+    }
+    .nav-links { display:flex; align-items:center; gap:24px; color:var(--muted); font-size:.9rem; }
+    .nav-links a:hover { color:var(--text); }
+    .nav-actions { display:flex; gap:9px; }
+    .icon-btn, .menu-btn {
+      width:40px; height:40px; border:1px solid var(--line); border-radius:12px;
+      background:var(--panel); color:var(--text); cursor:pointer;
+    }
+    .menu-btn { display:none; }
+
+    /* Buttons */
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:9px;
+      min-height:44px; padding:0 18px; border-radius:12px;
+      border:1px solid var(--line); background:rgba(255,255,255,.04);
+      color:var(--text); font-weight:700; font-size:.9rem; cursor:pointer;
+      transition:.2s ease;
+    }
+    .btn:hover { transform:translateY(-2px); border-color:rgba(96,165,250,.45); }
+    .btn-primary {
+      color:#03101b; border-color:transparent;
+      background:linear-gradient(135deg,var(--cyan),var(--blue));
+      box-shadow:0 12px 35px rgba(34,211,238,.18);
+    }
+    .btn-ghost { background:transparent; }
+
+    /* Hero */
+    .hero { padding: 150px 0 85px; position:relative; }
+    .hero-grid { display:grid; grid-template-columns:1.15fr .85fr; gap:60px; align-items:center; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:8px; padding:7px 11px;
+      border:1px solid rgba(34,211,238,.22); border-radius:999px;
+      color:#9debf5; background:rgba(34,211,238,.06); font-size:.78rem; font-weight:700;
+      letter-spacing:.05em; text-transform:uppercase;
+    }
+    .dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 16px var(--green); }
+    h1 {
+      margin:20px 0 18px; max-width:850px;
+      font-size:clamp(2.8rem,6vw,5.55rem); line-height:1.01; letter-spacing:-.065em;
+    }
+    .gradient-text {
+      background:linear-gradient(100deg,var(--cyan),var(--blue) 45%,var(--violet));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .hero p { color:var(--muted); font-size:1.12rem; max-width:700px; }
+    .hero-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; }
+    .hero-note { margin-top:20px; font-size:.82rem; color:var(--muted); }
+
+    .orbital {
+      min-height:420px; position:relative; display:grid; place-items:center;
+      border:1px solid var(--line); border-radius:32px; overflow:hidden;
+      background:
+        radial-gradient(circle at center, rgba(96,165,250,.13), transparent 36%),
+        linear-gradient(145deg,rgba(255,255,255,.035),rgba(255,255,255,.01));
+      box-shadow:var(--shadow);
+    }
+    .orbital::before, .orbital::after {
+      content:""; position:absolute; border:1px solid rgba(96,165,250,.17); border-radius:50%;
+      width:280px; height:280px; transform:rotate(-18deg);
+    }
+    .orbital::after { width:390px; height:170px; transform:rotate(28deg); border-color:rgba(167,139,250,.16); }
+    .core {
+      width:150px; height:150px; border-radius:50%; display:grid; place-items:center; text-align:center;
+      background:radial-gradient(circle at 35% 30%, #42e8f5, #3575e9 52%, #5b21b6);
+      box-shadow:0 0 70px rgba(34,211,238,.24);
+      color:white; font-weight:800; position:relative; z-index:2;
+    }
+    .sat {
+      position:absolute; z-index:3; padding:10px 12px; border:1px solid var(--line);
+      background:rgba(5,9,20,.78); backdrop-filter:blur(12px); border-radius:12px;
+      font-size:.76rem; font-family:"JetBrains Mono",monospace; color:#d8e5f5;
+    }
+    body.light .sat { background:rgba(255,255,255,.86); }
+    .sat.s1 { top:18%; left:10%; } .sat.s2 { top:12%; right:9%; }
+    .sat.s3 { bottom:17%; left:7%; } .sat.s4 { bottom:12%; right:7%; }
+
+    /* Metrics */
+    .metric-strip {
+      display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:26px;
+    }
+    .metric {
+      padding:18px; border:1px solid var(--line); border-radius:17px;
+      background:var(--panel); backdrop-filter:blur(14px);
+    }
+    .metric strong { display:block; font-size:1.7rem; letter-spacing:-.04em; }
+    .metric span { color:var(--muted); font-size:.78rem; }
+
+    section { padding:90px 0; }
+    .section-head { display:flex; justify-content:space-between; gap:30px; align-items:end; margin-bottom:34px; }
+    .kicker { color:var(--cyan); font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:.13em; }
+    h2 { margin:7px 0 0; font-size:clamp(2rem,4vw,3.25rem); line-height:1.08; letter-spacing:-.055em; }
+    .section-head p { max-width:520px; color:var(--muted); margin:0; }
+
+    /* Cards */
+    .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .card {
+      padding:24px; border:1px solid var(--line); border-radius:var(--radius);
+      background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+      box-shadow:0 10px 40px rgba(0,0,0,.08);
+      transition:.25s ease;
+    }
+    .card:hover { transform:translateY(-5px); border-color:rgba(96,165,250,.28); }
+    .card-icon { font-size:1.55rem; margin-bottom:18px; }
+    .card h3 { margin:0 0 8px; font-size:1.08rem; }
+    .card p { margin:0; color:var(--muted); font-size:.91rem; }
+
+    /* Pipeline */
+    .pipeline {
+      display:grid; grid-template-columns:repeat(5,1fr); gap:10px; align-items:stretch;
+    }
+    .stage {
+      position:relative; padding:22px 16px; min-height:145px; border:1px solid var(--line);
+      border-radius:18px; background:var(--panel); text-align:center;
+    }
+    .stage:not(:last-child)::after {
+      content:"→"; position:absolute; right:-17px; top:50%; transform:translateY(-50%);
+      color:var(--cyan); font-size:1.4rem; z-index:2;
+    }
+    .stage .num { font-family:"JetBrains Mono"; color:var(--cyan); font-size:.72rem; }
+    .stage h3 { font-size:.93rem; margin:13px 0 5px; }
+    .stage p { color:var(--muted); font-size:.76rem; margin:0; }
+
+    /* Results */
+    .results-layout { display:grid; grid-template-columns:.8fr 1.2fr; gap:20px; }
+    .result-card { padding:26px; border:1px solid var(--line); border-radius:24px; background:var(--panel); }
+    .big-score { font-size:clamp(3.6rem,7vw,6rem); font-weight:800; line-height:1; letter-spacing:-.07em; }
+    .score-label { color:var(--muted); margin-top:8px; }
+    .bars { margin-top:28px; display:grid; gap:17px; }
+    .bar-row { display:grid; grid-template-columns:90px 1fr 55px; gap:10px; align-items:center; font-size:.8rem; }
+    .track { height:8px; border-radius:99px; background:rgba(148,163,184,.13); overflow:hidden; }
+    .fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--cyan),var(--violet)); }
+    .table-wrap { overflow:auto; }
+    table { width:100%; border-collapse:collapse; min-width:520px; }
+    th,td { text-align:left; padding:14px 12px; border-bottom:1px solid var(--line); font-size:.84rem; }
+    th { color:var(--muted); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+    td:last-child, th:last-child { text-align:right; }
+
+    /* Architecture */
+    .architecture {
+      padding:28px; border:1px solid var(--line); border-radius:26px; background:var(--panel);
+      overflow:auto;
+    }
+    .arch-grid { min-width:760px; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:center; }
+    .arch-node {
+      padding:18px; min-height:100px; border:1px solid rgba(96,165,250,.2); border-radius:16px;
+      background:linear-gradient(145deg,rgba(96,165,250,.08),rgba(167,139,250,.04));
+    }
+    .arch-node strong { display:block; font-size:.88rem; }
+    .arch-node small { display:block; color:var(--muted); margin-top:7px; }
+    .arch-arrow { text-align:center; color:var(--cyan); font-size:1.3rem; }
+
+    /* Tech */
+    .tech-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; }
+    .tech { padding:16px 10px; text-align:center; border:1px solid var(--line); border-radius:14px; background:var(--panel); }
+    .tech b { display:block; font-size:.82rem; }
+    .tech span { color:var(--muted); font-size:.7rem; }
+
+    /* Code */
+    .code-card { border:1px solid var(--line); border-radius:24px; overflow:hidden; background:#07101b; box-shadow:var(--shadow); }
+    .code-top { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .traffic { display:flex; gap:6px; } .traffic i { width:9px; height:9px; border-radius:50%; background:#64748b; display:block; }
+    .code-top span { color:#8291a7; font:12px "JetBrains Mono"; }
+    pre { margin:0; padding:24px; overflow:auto; color:#d7e4f2; font:13px/1.75 "JetBrains Mono",monospace; }
+    .kw { color:#c084fc; } .fn { color:#67e8f9; } .str { color:#86efac; } .cm { color:#64748b; }
+
+    /* Roadmap */
+    .roadmap { display:grid; gap:12px; }
+    .road {
+      display:grid; grid-template-columns:110px 1fr auto; gap:18px; align-items:center;
+      padding:18px 20px; border:1px solid var(--line); border-radius:16px; background:var(--panel);
+    }
+    .road .tag { font:600 .72rem "JetBrains Mono"; color:var(--cyan); }
+    .road strong { font-size:.92rem; }
+    .road span { color:var(--muted); font-size:.8rem; }
+    .status { color:var(--green); font-size:.72rem; font-weight:700; }
+
+    /* CTA/footer */
+    .cta {
+      text-align:center; padding:65px 30px; border:1px solid rgba(34,211,238,.18); border-radius:30px;
+      background:radial-gradient(circle at 50% 0%,rgba(34,211,238,.13),transparent 48%),var(--panel);
+    }
+    .cta p { color:var(--muted); max-width:650px; margin:15px auto 25px; }
+    footer { padding:40px 0 55px; color:var(--muted); border-top:1px solid var(--line); }
+    .footer-row { display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; font-size:.82rem; }
+    .footer-links { display:flex; gap:18px; }
+    .footer-links a:hover { color:var(--text); }
+
+    /* Reveal */
+    .reveal { opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+
+    @media (max-width: 980px) {
+      .hero-grid, .results-layout { grid-template-columns:1fr; }
+      .orbital { min-height:340px; }
+      .cards { grid-template-columns:repeat(2,1fr); }
+      .pipeline { grid-template-columns:1fr; }
+      .stage:not(:last-child)::after { content:"↓"; right:auto; left:50%; top:auto; bottom:-24px; transform:translateX(-50%); }
+      .tech-grid { grid-template-columns:repeat(3,1fr); }
+      .nav-links { display:none; }
+      .menu-btn { display:block; }
+    }
+    @media (max-width: 650px) {
+      .container { width:min(calc(100% - 26px),var(--max)); }
+      .hero { padding-top:120px; }
+      section { padding:65px 0; }
+      .metric-strip, .cards { grid-template-columns:1fr 1fr; }
+      .metric { padding:14px; }
+      .metric strong { font-size:1.35rem; }
+      .section-head { display:block; }
+      .section-head p { margin-top:14px; }
+      .tech-grid { grid-template-columns:repeat(2,1fr); }
+      .road { grid-template-columns:1fr; gap:6px; }
+      .nav-actions .btn { display:none; }
+      .hero-actions .btn { flex:1; }
+    }
+    @media (max-width: 430px) {
+      .metric-strip { grid-template-columns:1fr 1fr; }
+      .sat { font-size:.64rem; }
+      .sat.s1 { left:4%; } .sat.s2 { right:4%; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="nav-wrap">
+    <nav class="container">
+      <a class="brand" href="#top" aria-label="AI Failure Root Cause home">
+        <span class="brand-mark">🧠</span>
+        <span>Failure<span class="gradient-text">RCA</span></span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#problem">Problem</a>
+        <a href="#pipeline">Pipeline</a>
+        <a href="#results">Results</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#research">Research</a>
+      </div>
+
+      <div class="nav-actions">
+        <a class="btn btn-primary" href="https://github.com/upadrastaharshavardhan/ai-failure-root-cause-NLP" target="_blank" rel="noopener">GitHub ↗</a>
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle theme">☼</button>
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">☰</button>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="reveal">
+          <div class="eyebrow"><span class="dot"></span> NLP • ML • Semantic Search • RCA</div>
+          <h1>Turn failure logs into <span class="gradient-text">root-cause intelligence.</span></h1>
+          <p>
+            An AI-based research prototype that transforms raw software failures into semantic representations,
+            predicts the most likely root cause, and retrieves similar historical incidents.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#results">Explore Results ↓</a>
+            <a class="btn" href="https://github.com/upadrastaharshavardhan/ai-failure-root-cause-NLP" target="_blank" rel="noopener">View Repository ↗</a>
+            <a class="btn btn-ghost" href="paper/AI_Failure_Root_Cause_Prediction_Research_Paper.pdf">Research Paper →</a>
+          </div>
+          <div class="hero-note">Research prototype • Synthetic 3,000-sample dataset • August 2026</div>
+        </div>
+
+        <div class="orbital reveal" aria-label="Root cause intelligence visualization">
+          <div class="sat s1">RAW LOGS</div>
+          <div class="sat s2">NLP EMBEDDINGS</div>
+          <div class="sat s3">FAISS SEARCH</div>
+          <div class="sat s4">ML CLASSIFIER</div>
+          <div class="core">ROOT<br>CAUSE<br>AI</div>
+        </div>
+      </div>
+
+      <div class="container metric-strip reveal">
+        <div class="metric"><strong>96.83%</strong><span>Accuracy</span></div>
+        <div class="metric"><strong>0.967</strong><span>Macro F1</span></div>
+        <div class="metric"><strong>0.978</strong><span>Recall@5</span></div>
+        <div class="metric"><strong>12–15ms</strong><span>Reported GPU E2E</span></div>
+      </div>
+    </section>
+
+    <section id="problem">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">01 / The problem</div><h2>Production failures are noisy.</h2></div>
+          <p>Engineers must interpret logs, exceptions, traces and runtime context before deciding what actually caused an incident.</p>
+        </div>
+
+        <div class="cards">
+          <article class="card reveal"><div class="card-icon">📜</div><h3>Raw diagnostic noise</h3><p>Request IDs, correlation IDs, timestamps, UUIDs and stack-trace details can obscure the semantic failure signal.</p></article>
+          <article class="card reveal"><div class="card-icon">🔎</div><h3>Historical search</h3><p>Finding a previous incident with similar meaning is harder when wording and runtime context change.</p></article>
+          <article class="card reveal"><div class="card-icon">🧩</div><h3>Ambiguous causes</h3><p>Categories such as Dependency ↔ Network and RaceCondition ↔ Database can overlap semantically.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="pipeline">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">02 / Intelligence pipeline</div><h2>From failure text to evidence.</h2></div>
+          <p>The system combines preprocessing, sentence embeddings, supervised classification and vector similarity search.</p>
+        </div>
+
+        <div class="pipeline">
+          <div class="stage reveal"><div class="num">01</div><h3>Failure Input</h3><p>Logs, exceptions, traces and service context.</p></div>
+          <div class="stage reveal"><div class="num">02</div><h3>NLP Preprocessing</h3><p>Remove dynamic identifiers and extract useful phrases.</p></div>
+          <div class="stage reveal"><div class="num">03</div><h3>Sentence Embedding</h3><p>all-MiniLM-L6-v2 → 384-dimensional vectors.</p></div>
+          <div class="stage reveal"><div class="num">04</div><h3>Dual Intelligence</h3><p>Classifier predicts cause; FAISS retrieves similar failures.</p></div>
+          <div class="stage reveal"><div class="num">05</div><h3>RCA Result</h3><p>Root cause, confidence and historical evidence.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">03 / Experimental results</div><h2>Strong research signals.</h2></div>
+          <p>Reported results use a 600-sample held-out test set from a 3,000-sample synthetic dataset with an 80/20 stratified split.</p>
+        </div>
+
+        <div class="results-layout">
+          <div class="result-card reveal">
+            <div class="big-score">96.83%</div>
+            <div class="score-label">Headline classification accuracy</div>
+            <div class="bars">
+              <div class="bar-row"><span>Accuracy</span><div class="track"><div class="fill" style="width:96.83%"></div></div><b>96.83</b></div>
+              <div class="bar-row"><span>Macro F1</span><div class="track"><div class="fill" style="width:96.7%"></div></div><b>0.967</b></div>
+              <div class="bar-row"><span>Recall@5</span><div class="track"><div class="fill" style="width:97.8%"></div></div><b>0.978</b></div>
+              <div class="bar-row"><span>MRR@5</span><div class="track"><div class="fill" style="width:91.2%"></div></div><b>0.912</b></div>
+            </div>
+          </div>
+
+          <div class="result-card reveal">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Metric</th><th>Result</th></tr></thead>
+                <tbody>
+                  <tr><td>Accuracy</td><td><b>96.83%</b></td></tr>
+                  <tr><td>Macro Precision</td><td>0.969</td></tr>
+                  <tr><td>Macro Recall</td><td>0.968</td></tr>
+                  <tr><td>Macro F1</td><td>0.967</td></tr>
+                  <tr><td>Weighted F1</td><td>0.968</td></tr>
+                  <tr><td>Recall@1</td><td>0.847</td></tr>
+                  <tr><td>Recall@3</td><td>0.953</td></tr>
+                  <tr><td>Recall@5</td><td>0.978</td></tr>
+                  <tr><td>Precision@5</td><td>0.891</td></tr>
+                  <tr><td>MRR@5</td><td>0.912</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p style="color:var(--muted);font-size:.76rem;margin:18px 0 0">⚠️ Research results on synthetic data; not a claim of production accuracy on real enterprise incident data.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="architecture">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">04 / System architecture</div><h2>One representation. Two paths.</h2></div>
+          <p>The same semantic representation feeds both root-cause classification and historical similarity retrieval.</p>
+        </div>
+
+        <div class="architecture reveal">
+          <div class="arch-grid">
+            <div class="arch-node"><strong>📥 Failure Input</strong><small>Logs / Error / Trace</small></div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node"><strong>🧹 NLP Preprocessing</strong><small>Noise + ID removal</small></div>
+            <div class="arch-arrow">→</div>
+
+            <div class="arch-node"><strong>🧠 Sentence Transformer</strong><small>all-MiniLM-L6-v2 • 384D</small></div>
+            <div class="arch-arrow">↙</div>
+            <div class="arch-node"><strong>🎯 Root Cause Classifier</strong><small>Logistic Regression / Random Forest</small></div>
+            <div class="arch-arrow">↘</div>
+
+            <div class="arch-node"><strong>🔎 FAISS</strong><small>IndexFlatIP • Top-K search</small></div>
+            <div class="arch-arrow">→</div>
+            <div class="arch-node"><strong>📊 Historical Evidence</strong><small>Similar failures</small></div>
+            <div class="arch-arrow">→</div>
+
+            <div class="arch-node"><strong>💡 Failure Intelligence</strong><small>Cause + confidence + context</small></div>
+            <div class="arch-arrow">←</div>
+            <div class="arch-node"><strong>🧾 Analysis Result</strong><small>Actionable RCA output</small></div>
+            <div class="arch-arrow">←</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="research">
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">05 / Research</div><h2>What the experiments reveal.</h2></div>
+          <p>The project compares preprocessing, semantic embeddings, classifier choices and retrieval behavior rather than reporting only one final model.</p>
+        </div>
+
+        <div class="cards">
+          <article class="card reveal"><div class="card-icon">📈</div><h3>Semantic embeddings beat TF-IDF</h3><p>MiniLM + Logistic Regression + FAISS reports 96.83% accuracy versus 89.50% for the TF-IDF baseline.</p></article>
+          <article class="card reveal"><div class="card-icon">🧹</div><h3>Preprocessing matters</h3><p>Removing dynamic identifiers and timestamps improves the reported accuracy from 94.17% to 96.83%.</p></article>
+          <article class="card reveal"><div class="card-icon">🚀</div><h3>Larger model can help</h3><p>all-mpnet-base-v2 reaches a reported 97.33% accuracy, with a larger/slower embedding model.</p></article>
+          <article class="card reveal"><div class="card-icon">🔍</div><h3>Retrieval adds context</h3><p>Similar historical failures provide additional evidence when classification confidence is imperfect.</p></article>
+          <article class="card reveal"><div class="card-icon">⚡</div><h3>Inference is lightweight</h3><p>Reported end-to-end latency is 12–15 ms on GPU and 30–45 ms on CPU for the evaluated pipeline.</p></article>
+          <article class="card reveal"><div class="card-icon">⚠️</div><h3>Generalization remains open</h3><p>Synthetic data, nine categories and fixed evaluation conditions require further real-world validation.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">06 / Technology stack</div><h2>Research-grade, practical tooling.</h2></div>
+        </div>
+        <div class="tech-grid">
+          <div class="tech reveal"><b>Python</b><span>Language</span></div>
+          <div class="tech reveal"><b>spaCy</b><span>NLP</span></div>
+          <div class="tech reveal"><b>Sentence Transformers</b><span>Embeddings</span></div>
+          <div class="tech reveal"><b>scikit-learn</b><span>Machine Learning</span></div>
+          <div class="tech reveal"><b>FAISS</b><span>Vector Search</span></div>
+          <div class="tech reveal"><b>Gradio</b><span>Demo UI</span></div>
+          <div class="tech reveal"><b>YAML</b><span>Configuration</span></div>
+          <div class="tech reveal"><b>Jupyter</b><span>Research</span></div>
+          <div class="tech reveal"><b>Google Colab</b><span>GPU Workflow</span></div>
+          <div class="tech reveal"><b>Logistic Regression</b><span>Primary Classifier</span></div>
+          <div class="tech reveal"><b>Random Forest</b><span>Alternative</span></div>
+          <div class="tech reveal"><b>MIT</b><span>License</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">07 / Quick start</div><h2>Reproduce the experiment.</h2></div>
+          <p>Run the implementation from the repository's <code>codebase/</code> directory.</p>
+        </div>
+
+        <div class="code-card reveal">
+          <div class="code-top">
+            <div class="traffic"><i></i><i></i><i></i></div>
+            <span>terminal</span>
+            <button class="btn" id="copyBtn" style="min-height:30px;padding:0 10px;font-size:.72rem">Copy</button>
+          </div>
+          <pre id="commands"><span class="cm"># Clone</span>
+git clone https://github.com/upadrastaharshavardhan/ai-failure-root-cause-NLP.git
+cd ai-failure-root-cause-NLP/codebase
+
+<span class="cm"># Environment</span>
+python -m venv .venv
+<span class="cm"># Windows: .venv\Scripts\activate</span>
+<span class="cm"># Linux/macOS: source .venv/bin/activate</span>
+
+<span class="cm"># Dependencies</span>
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+
+<span class="cm"># Reproduce</span>
+python scripts/generate_data.py --n-samples 3000 --seed 42
+python scripts/train.py
+python scripts/evaluate.py
+
+<span class="cm"># Launch Gradio demo</span>
+python -m src.api.gradio_app</pre>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head reveal">
+          <div><div class="kicker">08 / Roadmap</div><h2>From prototype to autonomous RCA.</h2></div>
+          <p>The README identifies a progression from controlled synthetic research toward real telemetry, hierarchical reasoning and autonomous root-cause analysis.</p>
+        </div>
+
+        <div class="roadmap">
+          <div class="road reveal"><div class="tag">NOW</div><div><strong>Synthetic Failure Dataset</strong><br><span>Controlled multi-service Java/Spring-style failures.</span></div><div class="status">RESEARCH</div></div>
+          <div class="road reveal"><div class="tag">NEXT</div><div><strong>Real Log Data + Better Models</strong><br><span>Domain adaptation and transformer fine-tuning.</span></div><div class="status">PLANNED</div></div>
+          <div class="road reveal"><div class="tag">RCA</div><div><strong>Hierarchical & Multi-Service RCA</strong><br><span>Service dependency graphs and broader taxonomy.</span></div><div class="status">PLANNED</div></div>
+          <div class="road reveal"><div class="tag">VISION</div><div><strong>Root Cause Knowledge Graph</strong><br><span>Connect failures, services, dependencies and evidence.</span></div><div class="status">FUTURE</div></div>
+          <div class="road reveal"><div class="tag">GOAL</div><div><strong>Autonomous RCA</strong><br><span>Explainable, feedback-driven incident intelligence.</span></div><div class="status">VISION</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="cta reveal">
+          <div class="kicker">Open research</div>
+          <h2>Failure logs → semantic understanding → root-cause intelligence.</h2>
+          <p>Explore the implementation, reproduce the experiments, read the research package, or contribute improvements.</p>
+          <div class="hero-actions" style="justify-content:center">
+            <a class="btn btn-primary" href="https://github.com/upadrastaharshavardhan/ai-failure-root-cause-NLP" target="_blank" rel="noopener">⭐ Star on GitHub</a>
+            <a class="btn" href="docs/Methodology_Detailed.md">Read Methodology</a>
+            <a class="btn" href="docs/Experimental_Results_Summary.md">View Results</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <div>© 2026 Upadrasta Harsha Vardhan · AI / ML · NLP · Software Quality Engineering</div>
+      <div class="footer-links">
+        <a href="README.md">README</a>
+        <a href="paper/AI_Failure_Root_Cause_Prediction_Research_Paper.pdf">Paper</a>
+        <a href="LICENSE">MIT License</a>
+        <a href="https://github.com/upadrastaharshavardhan/ai-failure-root-cause-NLP" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const body = document.body;
+    const themeBtn = document.getElementById('themeBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const commands = document.getElementById('commands');
+    const menuBtn = document.getElementById('menuBtn');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (localStorage.getItem('frca-theme') === 'light') body.classList.add('light');
+
+    themeBtn.addEventListener('click', () => {
+      body.classList.toggle('light');
+      localStorage.setItem('frca-theme', body.classList.contains('light') ? 'light' : 'dark');
+      themeBtn.textContent = body.classList.contains('light') ? '☾' : '☼';
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      const text = commands.innerText;
+      try {
+        await navigator.clipboard.writeText(text);
+        copyBtn.textContent = 'Copied ✓';
+        setTimeout(() => copyBtn.textContent = 'Copy', 1400);
+      } catch {
+        copyBtn.textContent = 'Select manually';
+        setTimeout(() => copyBtn.textContent = 'Copy', 1400);
+      }
+    });
+
+    menuBtn.addEventListener('click', () => {
+      const open = navLinks.style.display === 'flex';
+      navLinks.style.display = open ? '' : 'flex';
+      if (!open) {
+        navLinks.style.position = 'absolute';
+        navLinks.style.top = '72px';
+        navLinks.style.left = '13px';
+        navLinks.style.right = '13px';
+        navLinks.style.padding = '18px';
+        navLinks.style.flexDirection = 'column';
+        navLinks.style.alignItems = 'stretch';
+        navLinks.style.border = '1px solid var(--line)';
+        navLinks.style.borderRadius = '16px';
+        navLinks.style.background = 'var(--panel-solid)';
+      }
+    });
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: .08 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
